@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./images/batman.jpg" alt="" align="center" height="96" />
+<img src="./images/batman.jpg" alt="" align="center" width="125" />
 
 # DC Comics MCP Server
 
@@ -14,7 +14,7 @@
 
 MCP Server for the [Comic Vine API](https://comicvine.gamespot.com/api/), enabling interaction with DC Comics characters and issues data. *The main goal of the project is to show how an MCP server can be used to interact with APIs.*
 
-> **Note**: All data used by this MCP server is fetched from the [Comic Vine API](https://comicvine.gamespot.com/api/) and is owned by Comic Vine. This project is not affiliated with Comic Vine or DC Comics in any way.
+> **Note**: All data used by this MCP server is fetched from the [Comic Vine API](https://comicvine.gamespot.com/api/). This project is not affiliated with Comic Vine or DC Comics in any way.
 
 <a name="features"></a>
 ## 🔧 Features
