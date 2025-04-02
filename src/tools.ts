@@ -13,9 +13,13 @@ import {
     SearchResponseSchema,
     GenerateComicsHtmlSchema,
     HtmlResponseSchema,
-    ResponseStatusSchema
+    ResponseStatusSchema,
+    MovieSchema,
+    MoviesResponseSchema,
+    GetMoviesSchema,
+    ResourcePrefix
 } from "./schemas.js";
-import { generateComicsHtml, httpRequest, serializeQueryParams } from "./utils.js";
+import { formatResourceId, generateComicsHtml, httpRequest, serializeQueryParams } from "./utils.js";
 import { z } from "zod";
 
 // Define interfaces for API responses
@@ -37,7 +41,12 @@ export const dcComicsTools = {
         schema: GetCharactersSchema,
         handler: async (args: any) => {
             const argsParsed = GetCharactersSchema.parse(args);
-            const res = await httpRequest('/characters', serializeQueryParams(argsParsed));
+            // Add field_list parameter to specify which fields to return
+            const params = {
+                ...serializeQueryParams(argsParsed),
+                field_list: 'aliases,character_enemies,character_friends,id,image,movies,name,powers,real_name,team_enemies,team_friends'
+            };
+            const res = await httpRequest('/characters', params);
             return CharactersResponseSchema.parse(res);
         }
     },
@@ -46,7 +55,14 @@ export const dcComicsTools = {
         schema: GetCharacterByIdSchema,
         handler: async (args: any) => {
             const argsParsed = GetCharacterByIdSchema.parse(args);
-            const res = await httpRequest<ApiResponse>(`/character/${argsParsed.characterId}`);
+            // Format character ID with the proper prefix
+            const formattedId = formatResourceId('CHARACTER', argsParsed.characterId);
+            
+            // Add field_list parameter to specify which fields to return
+            const params = {
+                field_list: 'aliases,character_enemies,character_friends,id,image,movies,name,powers,real_name,team_enemies,team_friends'
+            };
+            const res = await httpRequest<ApiResponse>(`/character/${formattedId}`, params);
             
             // Validate the response and results
             const characterResponse: CharacterResponse = {
@@ -62,9 +78,12 @@ export const dcComicsTools = {
         schema: GetIssuesForCharacterSchema,
         handler: async (args: any) => {
             const { characterId, ...rest } = GetIssuesForCharacterSchema.parse(args);
+            // Format character ID with the proper prefix
+            const formattedId = formatResourceId('CHARACTER', characterId);
+            
             const res = await httpRequest(`/issues`, {
                 ...serializeQueryParams(rest),
-                filter: `character:${characterId}`
+                filter: `character:${formattedId}`
             });
             return IssuesResponseSchema.parse(res);
         }
@@ -83,7 +102,10 @@ export const dcComicsTools = {
         schema: GetIssueByIdSchema,
         handler: async (args: any) => {
             const argsParsed = GetIssueByIdSchema.parse(args);
-            const res = await httpRequest<ApiResponse>(`/issue/${argsParsed.issueId}`);
+            // Format issue ID with the proper prefix
+            const formattedId = formatResourceId('ISSUE', argsParsed.issueId);
+            
+            const res = await httpRequest<ApiResponse>(`/issue/${formattedId}`);
             
             // Validate the response and results
             const issueResponse: IssueResponse = {
@@ -99,8 +121,11 @@ export const dcComicsTools = {
         schema: GetCharactersForIssueSchema,
         handler: async (args: any) => {
             const { issueId, ...rest } = GetCharactersForIssueSchema.parse(args);
+            // Format issue ID with the proper prefix
+            const formattedId = formatResourceId('ISSUE', issueId);
+            
             // First fetch the issue to get character references
-            const issueRes = await httpRequest<ApiResponse>(`/issue/${issueId}`);
+            const issueRes = await httpRequest<ApiResponse>(`/issue/${formattedId}`);
             
             // Verify issue has character_credits
             const validatedIssue = ResponseStatusSchema.parse(issueRes);
@@ -119,18 +144,21 @@ export const dcComicsTools = {
                 });
             }
             
-            // Extract character IDs
+            // Extract character IDs and ensure they have the correct prefix
             const characterIds = issueResults.character_credits.map((char: any) => {
                 // Extract the ID from api_detail_url
                 const matches = char.api_detail_url.match(/\/(\d+)\/$/);
-                return matches ? matches[1] : null;
+                return matches ? formatResourceId('CHARACTER', parseInt(matches[1])) : null;
             }).filter(Boolean).join(',');
             
             // Fetch the characters using the IDs
-            const res = await httpRequest(`/characters`, {
+            const params = {
                 ...serializeQueryParams(rest),
-                filter: `id:${characterIds}`
-            });
+                filter: `id:${characterIds}`,
+                field_list: 'aliases,character_enemies,character_friends,id,image,movies,name,powers,real_name,team_enemies,team_friends'
+            };
+            
+            const res = await httpRequest(`/characters`, params);
             
             return CharactersResponseSchema.parse(res);
         }
@@ -139,8 +167,20 @@ export const dcComicsTools = {
         description: 'Search across DC Comics resources (characters, issues, volumes, etc)',
         schema: SearchSchema,
         handler: async (args: any) => {
-            const argsParsed = SearchSchema.parse(args);
-            const res = await httpRequest(`/search`, serializeQueryParams(argsParsed));
+            const { query, resources, limit, offset } = SearchSchema.parse(args);
+            
+            // Instead of using a separate utility function, call httpRequest directly
+            const params = serializeQueryParams({
+                query,
+                resources,
+                limit,
+                offset
+            });
+            
+            // Make the API request to the search endpoint
+            const res = await httpRequest('/search', params);
+            
+            // Validate the response with the SearchResponseSchema
             return SearchResponseSchema.parse(res);
         }
     },
@@ -168,6 +208,63 @@ export const dcComicsTools = {
                 total: issuesData.number_of_total_results,
                 message: `Generated HTML view for ${issuesData.number_of_page_results} issues (out of ${issuesData.number_of_total_results} total matches)`
             });
+        }
+    },
+    get_movies: {
+        description: 'Fetch DC Comics movies with optional filters',
+        schema: GetMoviesSchema,
+        handler: async (args: any) => {
+            const argsParsed = GetMoviesSchema.parse(args);
+            
+            // Set default field_list if not provided
+            if (!argsParsed.field_list) {
+                argsParsed.field_list = 'id,name,deck,description,image,release_date,runtime,rating,box_office_revenue,total_revenue,budget,studios,writers,producers';
+            }
+            
+            const res = await httpRequest('/movies', serializeQueryParams(argsParsed));
+            
+            return MoviesResponseSchema.parse({
+                status_code: res.status_code || 1,
+                error: res.error || 'OK',
+                number_of_total_results: res.number_of_total_results,
+                number_of_page_results: res.number_of_page_results,
+                limit: res.limit,
+                offset: res.offset,
+                results: Array.isArray(res.results) ? res.results : [res.results]
+            });
+        }
+    },
+    get_movie_by_id: {
+        description: 'Fetch a DC Comics movie by ID',
+        schema: z.object({
+            movieId: z.number().describe('Unique identifier for the movie'),
+            field_list: z.string().optional().describe('List of field names to include in the response, comma-separated')
+        }),
+        handler: async (args: any) => {
+            const { movieId, field_list } = args;
+            // Format movie ID with the proper prefix
+            const formattedId = formatResourceId('MOVIE', movieId);
+            
+            // Set default field_list if not provided
+            const params: any = {};
+            if (field_list) {
+                params.field_list = field_list;
+            } else {
+                params.field_list = 'id,name,deck,description,image,release_date,runtime,rating,box_office_revenue,total_revenue,budget,studios,writers,producers';
+            }
+            
+            const res = await httpRequest<ApiResponse>(`/movie/${formattedId}`, params);
+            
+            // Validate and return the movie data
+            return {
+                status_code: res.status_code || 1,
+                error: res.error || 'OK',
+                number_of_total_results: 1,
+                number_of_page_results: 1,
+                limit: 1,
+                offset: 0,
+                results: MovieSchema.parse(res.results)
+            };
         }
     }
 };

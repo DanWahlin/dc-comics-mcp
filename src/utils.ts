@@ -1,3 +1,6 @@
+import { ResourcePrefix } from './schemas.js';
+
+// Rest of utility functions
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
 config();
@@ -7,6 +10,12 @@ const COMIC_VINE_API_BASE = process.env.COMIC_VINE_API_BASE as string;
 
 if (!COMIC_VINE_API_KEY) throw new Error('Missing COMIC_VINE_API_KEY env variable');
 if (!COMIC_VINE_API_BASE) throw new Error('Missing COMIC_VINE_API_BASE env variable');
+
+// Helper function to format resource IDs with their proper prefix
+export function formatResourceId(resourceType: keyof typeof ResourcePrefix, id: number): string {
+    const prefix = ResourcePrefix[resourceType];
+    return `${prefix}-${id}`;
+  }
 
 export function serializeQueryParams(params: Record<string, any>): Record<string, string | number | undefined> {
   const result: Record<string, string | number | undefined> = {};
