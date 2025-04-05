@@ -171,9 +171,9 @@ Add the following to your `claude_desktop_config.json`:
       "command": "npx",
       // "command": "node",
       "args": [
-        "-y",
-        "@codewithdan/dc-comics-mcp"
-        // "/PATH/TO/dc-comics-mcp/dist/index.js"
+        // "-y",
+        // "@codewithdan/dc-comics-mcp"
+        "/PATH/TO/dc-comics-mcp/dist/index.js"
       ],
       "env": {
         "COMIC_VINE_API_KEY": "YOUR_API_KEY",
@@ -198,9 +198,9 @@ If you want to associate the MCP server with a specific repo, create a `.vscode/
             "command": "npx",
             // "command": "node",
             "args": [
-                "-y",
-                "@codewithdan/dc-comics-mcp"
-                // "/PATH/TO/dc-comics-mcp/dist/index.js"
+                // "-y",
+                // "@codewithdan/dc-comics-mcp"
+                "/PATH/TO/dc-comics-mcp/dist/index.js"
             ],
             "env": {
                 "COMIC_VINE_API_KEY": "YOUR_API_KEY",
