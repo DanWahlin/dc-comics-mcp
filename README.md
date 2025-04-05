@@ -168,8 +168,8 @@ Add the following to your `claude_desktop_config.json`:
   "mcpServers": {
     "dc-comics-mcp": {
       "type": "stdio",
-      "command": "npx",
-      // "command": "node",
+      // "command": "npx",
+      "command": "node",
       "args": [
         // "-y",
         // "@codewithdan/dc-comics-mcp"
@@ -195,8 +195,8 @@ If you want to associate the MCP server with a specific repo, create a `.vscode/
      "inputs": [],
      "servers": {
         "dc-comics-mcp": {
-            "command": "npx",
-            // "command": "node",
+            // "command": "npx",
+            "command": "node",
             "args": [
                 // "-y",
                 // "@codewithdan/dc-comics-mcp"
@@ -217,12 +217,12 @@ If you want to associate the MCP server with all repos, add the following to you
   "mcp": {
     "servers": {
         "dc-comics-mcp": {
-            "command": "npx",
-            // "command": "node",
+            // "command": "npx",
+            "command": "node",
             "args": [
-                "-y",
-                "@codewithdan/dc-comics-mcp"
-                // "/PATH/TO/dc-comics-mcp/dist/index.js"
+                // "-y",
+                // "@codewithdan/dc-comics-mcp"
+                "/PATH/TO/dc-comics-mcp/dist/index.js"
             ],
             "env": {
                 "COMIC_VINE_API_KEY": "YOUR_API_KEY",
@@ -230,8 +230,7 @@ If you want to associate the MCP server with all repos, add the following to you
             }
         },
     }
-  },
-  "chat.mcp.discovery.enabled": true,
+  }
    ```
 
 ### Using Tools in GitHub Copilot
@@ -251,8 +250,16 @@ If you want to associate the MCP server with all repos, add the following to you
     Show me some Superman comics.
     ```
 
-    > **Note**: If you see "Sorry, the response was filtered by the Responsible AI Service. Please rephrase your prompt and try again.", try running it again or rephrasing the prompt.
+    > **Note**: If you see "Sorry, the response was filtered by the Responsible AI Service.", try running it again or rephrasing the prompt.
 
-    ![GitHub Copilot example with DC Comics MCP tools](./images/ghcp-example.png)
+### Examples: Using the DC Comics MCP Tools in GitHub Copilot
+
+  `What movies has Batman been in?`
+
+  ![GitHub Copilot example with DC Comics MCP tools](./images/ghcp-example.png)
+
+  `Show 10 Batman comics. Include cover image URLs.`
+
+  ![GitHub Copilot example with DC Comics MCP tools](./images/ghcp-example-batman.png)
 
 
