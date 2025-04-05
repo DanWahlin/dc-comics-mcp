@@ -243,7 +243,7 @@ If you want to associate the MCP server with all repos, add the following to you
     ```
     Show 10 Batman comics. Include cover image URLs.
 
-    What movies has Batman been in?
+    What teams has Batman been part of?
     
     Show me Wonder Woman's appearances in Justice League comics.
 
