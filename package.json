@@ -44,7 +44,8 @@
   "scripts": {
     "start": "tsx ./src/index.ts",
     "build": "npx tsc",
-    "dev": "tsc && concurrently \"tsc --watch\" \"nodemon dist/index.js\"",
+    "watch": "npx tsc --watch",
+    "dev": "npx tsc && concurrently \"npx tsc --watch\" \"nodemon dist/index.js\"",
     "release:check": "semantic-release --dry-run"
   },
   "dependencies": {

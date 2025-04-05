@@ -4,6 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { dcComicsTools, ToolName } from './tools.js';
+import { instructions } from './instructions.js';
 
 const server = new Server(
   {
@@ -15,10 +16,13 @@ const server = new Server(
     capabilities: {
       tools: {},
     },
+    instructions
   }
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
+  // Use console.error to log the request since stdout is reserved for JSON-RPC communication
+  console.error('Processing tool list request');
   return {
     tools: Object.entries(dcComicsTools).map(([name, tool]) => ({
       name,
@@ -29,7 +33,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  console.log(`Processing tool request: ${request.params.name}`);
+  // Use console.error to log the request since stdout is reserved for JSON-RPC communication
+  console.error(`Processing tool request: ${request.params.name}`);
 
   if (!request.params.arguments) {
     throw new Error('Arguments are required');
@@ -50,7 +55,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     const result = await tool.handler(args);
     
-    console.log(`Completed tool request: ${name}`);
+    console.error(`Completed tool request: ${name}`);
 
     // Special handling for HTML content from generate_comics_html tool
     if (name === 'generate_comics_html' && 'html' in result) {

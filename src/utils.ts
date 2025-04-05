@@ -1,8 +1,9 @@
-import { ResourcePrefix } from './schemas.js';
+import { ResourcePrefix, ResponseStatusSchema, SearchResponseSchema } from './schemas.js';
 
 // Rest of utility functions
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
+import { z } from 'zod';
 config();
 
 const COMIC_VINE_API_KEY = process.env.COMIC_VINE_API_KEY as string;
@@ -10,6 +11,77 @@ const COMIC_VINE_API_BASE = process.env.COMIC_VINE_API_BASE as string;
 
 if (!COMIC_VINE_API_KEY) throw new Error('Missing COMIC_VINE_API_KEY env variable');
 if (!COMIC_VINE_API_BASE) throw new Error('Missing COMIC_VINE_API_BASE env variable');
+
+// Define default field lists for different resource types
+export const DEFAULT_FIELD_LISTS = {
+    CHARACTER: 'aliases,character_enemies,character_friends,id,image,movies,name,powers,real_name,team_enemies,team_friends',
+    ISSUE: 'id,name,image,issue_number,cover_date,description,character_credits',
+    MOVIE: 'id,name,deck,description,image,release_date,runtime,rating,box_office_revenue,total_revenue,budget,studios,writers,producers'
+};
+
+// Helper function to create standardized API responses
+export function createStandardResponse<T extends z.ZodType>(
+    responseSchema: T, 
+    dataOrError: Partial<z.infer<typeof ResponseStatusSchema>> & { results: any },
+    defaultLimit = 20
+): z.infer<T> {
+    return responseSchema.parse({
+        status_code: dataOrError.status_code || 1,
+        error: dataOrError.error || 'OK',
+        number_of_total_results: dataOrError.number_of_total_results || (Array.isArray(dataOrError.results) ? dataOrError.results.length : 1),
+        number_of_page_results: dataOrError.number_of_page_results || (Array.isArray(dataOrError.results) ? dataOrError.results.length : 1),
+        limit: dataOrError.limit || defaultLimit,
+        offset: dataOrError.offset || 0,
+        results: dataOrError.results || []
+    });
+}
+
+// Helper function to create an empty results response
+export function createEmptyResponse<T extends z.ZodType>(
+    responseSchema: T,
+    limit = 20,
+    offset = 0
+): z.infer<T> {
+    return responseSchema.parse({
+        status_code: 1,
+        error: "OK",
+        number_of_total_results: 0,
+        number_of_page_results: 0,
+        limit: limit,
+        offset: offset,
+        results: []
+    });
+}
+
+// API utility functions that can be used by multiple tools
+// Reusable function for performing searches across DC Comics resources
+export async function performDcComicsSearch(query: string, resources?: string, field_list?: string, limit?: number, offset?: number) {
+    // Create params object with all available search parameters
+    const params = serializeQueryParams({
+        query,
+        resources,
+        field_list,
+        limit,
+        offset
+    });
+    
+    // Make the API request to the search endpoint
+    const res = await httpRequest('/search', params);
+    
+    // Process the results to ensure null names are handled correctly
+    if (res.results && Array.isArray(res.results)) {
+        res.results = res.results.map((item: { name: string | null }) => {
+            // Ensure name is an empty string if it's null
+            if (item.name === null) {
+                item.name = '';
+            }
+            return item;
+        });
+    }
+    
+    // Validate the response with the SearchResponseSchema
+    return SearchResponseSchema.parse(res);
+}
 
 // Helper function to format resource IDs with their proper prefix
 export function formatResourceId(resourceType: keyof typeof ResourcePrefix, id: number): string {

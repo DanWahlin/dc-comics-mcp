@@ -10,30 +10,14 @@ import {
     IssuesResponseSchema,
     IssueSchema,
     SearchSchema,
-    SearchResponseSchema,
-    GenerateComicsHtmlSchema,
-    HtmlResponseSchema,
     ResponseStatusSchema,
-    MovieSchema,
     MoviesResponseSchema,
     GetMoviesSchema,
-    ResourcePrefix
+    GetIssuesByCharacterNameSchema
 } from "./schemas.js";
-import { formatResourceId, generateComicsHtml, httpRequest, serializeQueryParams } from "./utils.js";
+import { ApiResponse, CharacterResponse, CharacterSearchResult, IssueResponse } from "./types.js";
+import { createEmptyResponse, createStandardResponse, DEFAULT_FIELD_LISTS, formatResourceId, generateComicsHtml, httpRequest, performDcComicsSearch, serializeQueryParams } from "./utils.js";
 import { z } from "zod";
-
-// Define interfaces for API responses
-interface ApiResponse extends z.infer<typeof ResponseStatusSchema> {
-    results: any;
-}
-
-interface CharacterResponse extends ApiResponse {
-    results: z.infer<typeof CharacterSchema>;
-}
-
-interface IssueResponse extends ApiResponse {
-    results: z.infer<typeof IssueSchema>;
-}
 
 export const dcComicsTools = {
     get_characters: {
@@ -44,7 +28,7 @@ export const dcComicsTools = {
             // Add field_list parameter to specify which fields to return
             const params = {
                 ...serializeQueryParams(argsParsed),
-                field_list: 'aliases,character_enemies,character_friends,id,image,movies,name,powers,real_name,team_enemies,team_friends'
+                field_list: argsParsed.field_list || DEFAULT_FIELD_LISTS.CHARACTER
             };
             const res = await httpRequest('/characters', params);
             return CharactersResponseSchema.parse(res);
@@ -60,7 +44,7 @@ export const dcComicsTools = {
             
             // Add field_list parameter to specify which fields to return
             const params = {
-                field_list: 'aliases,character_enemies,character_friends,id,image,movies,name,powers,real_name,team_enemies,team_friends'
+                field_list: argsParsed.field_list || DEFAULT_FIELD_LISTS.CHARACTER
             };
             const res = await httpRequest<ApiResponse>(`/character/${formattedId}`, params);
             
@@ -74,38 +58,66 @@ export const dcComicsTools = {
         }
     },
     get_issues_for_character: {
-        description: 'Fetch DC Comics issues filtered by character ID and optional filters',
+        description: 'Fetch DC Comics issues (comics) filtered by character ID and optional filters',
         schema: GetIssuesForCharacterSchema,
         handler: async (args: any) => {
             const { characterId, ...rest } = GetIssuesForCharacterSchema.parse(args);
             // Format character ID with the proper prefix
             const formattedId = formatResourceId('CHARACTER', characterId);
             
-            const res = await httpRequest(`/issues`, {
-                ...serializeQueryParams(rest),
-                filter: `character:${formattedId}`
-            });
-            return IssuesResponseSchema.parse(res);
+            // First get character details to confirm it exists
+            const characterSearchResults = await performDcComicsSearch(formattedId, 'character', 'id,name');
+            
+            // Check if character was found
+            if (!characterSearchResults.results || characterSearchResults.results.length === 0) {
+                return createEmptyResponse(IssuesResponseSchema, rest.limit, rest.offset);
+            }
+            
+            // Now search for issues with this character
+            // Use character name for better search results
+            const characterName = characterSearchResults.results[0].name || '';
+            
+            // Set default field_list if not provided
+            let fieldList = rest.field_list || DEFAULT_FIELD_LISTS.ISSUE;
+            
+            // Search for issues featuring this character
+            const issueSearchResults = await performDcComicsSearch(
+                characterName, 
+                'issue', 
+                fieldList,
+                rest.limit,
+                rest.offset
+            );
+            
+            return IssuesResponseSchema.parse(issueSearchResults);
         }
     },
     get_issues: {
-        description: 'Fetches lists of DC Comics issues with optional filters',
+        description: 'Fetches lists of DC Comics issues (comics) with optional filters',
         schema: GetIssuesSchema,
         handler: async (args: any) => {
             const argsParsed = GetIssuesSchema.parse(args);
+            // Set default field_list if not provided
+            if (!argsParsed.field_list) {
+                argsParsed.field_list = DEFAULT_FIELD_LISTS.ISSUE;
+            }
             const res = await httpRequest(`/issues`, serializeQueryParams(argsParsed));
             return IssuesResponseSchema.parse(res);
         }
     },
     get_issue_by_id: {
-        description: 'Fetch a single DC Comics issue by ID',
+        description: 'Fetch a single DC Comics issue (comic) by ID',
         schema: GetIssueByIdSchema,
         handler: async (args: any) => {
             const argsParsed = GetIssueByIdSchema.parse(args);
             // Format issue ID with the proper prefix
             const formattedId = formatResourceId('ISSUE', argsParsed.issueId);
             
-            const res = await httpRequest<ApiResponse>(`/issue/${formattedId}`);
+            const params = {
+                field_list: argsParsed.field_list || DEFAULT_FIELD_LISTS.ISSUE
+            };
+            
+            const res = await httpRequest<ApiResponse>(`/issue/${formattedId}`, params);
             
             // Validate the response and results
             const issueResponse: IssueResponse = {
@@ -117,97 +129,41 @@ export const dcComicsTools = {
         }
     },
     get_characters_for_issue: {
-        description: 'Fetch DC Comics characters for a given issue',
+        description: 'Fetch DC Comics characters for a given issue/comic',
         schema: GetCharactersForIssueSchema,
         handler: async (args: any) => {
             const { issueId, ...rest } = GetCharactersForIssueSchema.parse(args);
             // Format issue ID with the proper prefix
             const formattedId = formatResourceId('ISSUE', issueId);
             
-            // First fetch the issue to get character references
-            const issueRes = await httpRequest<ApiResponse>(`/issue/${formattedId}`);
+            // First fetch the issue to get character credits using search functionality
+            const issueSearchResults = await performDcComicsSearch(formattedId, 'issue', 'id,name,character_credits');
             
-            // Verify issue has character_credits
-            const validatedIssue = ResponseStatusSchema.parse(issueRes);
-            const issueResults = IssueSchema.parse(issueRes.results);
-            
-            // Check if the issue has character_credits
-            if (!issueResults.character_credits || issueResults.character_credits.length === 0) {
-                return CharactersResponseSchema.parse({
-                    status_code: 1,
-                    error: "OK",
-                    number_of_total_results: 0,
-                    number_of_page_results: 0,
-                    limit: rest.limit || 20,
-                    offset: rest.offset || 0,
-                    results: []
-                });
+            // Check if issue was found
+            if (!issueSearchResults.results || issueSearchResults.results.length === 0) {
+                return createEmptyResponse(CharactersResponseSchema, rest.limit, rest.offset);
             }
             
-            // Extract character IDs and ensure they have the correct prefix
-            const characterIds = issueResults.character_credits.map((char: any) => {
-                // Extract the ID from api_detail_url
-                const matches = char.api_detail_url.match(/\/(\d+)\/$/);
-                return matches ? formatResourceId('CHARACTER', parseInt(matches[1])) : null;
-            }).filter(Boolean).join(',');
+            const issueResults = issueSearchResults.results[0] as CharacterSearchResult;
             
-            // Fetch the characters using the IDs
-            const params = {
-                ...serializeQueryParams(rest),
-                filter: `id:${characterIds}`,
-                field_list: 'aliases,character_enemies,character_friends,id,image,movies,name,powers,real_name,team_enemies,team_friends'
-            };
+            // Check if the issue has character_credits
+            if (!issueResults.character_credits || !Array.isArray(issueResults.character_credits) || issueResults.character_credits.length === 0) {
+                return createEmptyResponse(CharactersResponseSchema, rest.limit, rest.offset);
+            }
             
-            const res = await httpRequest(`/characters`, params);
+            // Extract character names to search for
+            const characterNames = issueResults.character_credits.map((char: { name: string }) => char.name).join(' OR ');
             
-            return CharactersResponseSchema.parse(res);
-        }
-    },
-    search: {
-        description: 'Search across DC Comics resources (characters, issues, volumes, etc)',
-        schema: SearchSchema,
-        handler: async (args: any) => {
-            const { query, resources, limit, offset } = SearchSchema.parse(args);
+            // Use search to find the characters
+            const characterSearchResults = await performDcComicsSearch(
+                characterNames, 
+                'character', 
+                rest.field_list || DEFAULT_FIELD_LISTS.CHARACTER,
+                rest.limit,
+                rest.offset
+            );
             
-            // Instead of using a separate utility function, call httpRequest directly
-            const params = serializeQueryParams({
-                query,
-                resources,
-                limit,
-                offset
-            });
-            
-            // Make the API request to the search endpoint
-            const res = await httpRequest('/search', params);
-            
-            // Validate the response with the SearchResponseSchema
-            return SearchResponseSchema.parse(res);
-        }
-    },
-    generate_comics_html: {
-        description: 'Create an HTML page displaying DC Comics issues with their images',
-        schema: GenerateComicsHtmlSchema,
-        handler: async (args: any) => {
-            const argsParsed = GenerateComicsHtmlSchema.parse(args);
-            const pageTitle = argsParsed.title || 'DC Comics';
-            
-            // Remove title from query parameters
-            const { title, ...queryParams } = argsParsed;
-            
-            // Fetch comics data from DC Comics API
-            const res = await httpRequest(`/issues`, serializeQueryParams(queryParams));
-            const issuesData = IssuesResponseSchema.parse(res);
-            
-            // Generate HTML
-            const html = generateComicsHtml(issuesData.results, pageTitle);
-            
-            // Return both the HTML and metadata about the result
-            return HtmlResponseSchema.parse({
-                html,
-                count: issuesData.number_of_page_results,
-                total: issuesData.number_of_total_results,
-                message: `Generated HTML view for ${issuesData.number_of_page_results} issues (out of ${issuesData.number_of_total_results} total matches)`
-            });
+            return createStandardResponse(CharactersResponseSchema, characterSearchResults);
         }
     },
     get_movies: {
@@ -218,20 +174,56 @@ export const dcComicsTools = {
             
             // Set default field_list if not provided
             if (!argsParsed.field_list) {
-                argsParsed.field_list = 'id,name,deck,description,image,release_date,runtime,rating,box_office_revenue,total_revenue,budget,studios,writers,producers';
+                argsParsed.field_list = DEFAULT_FIELD_LISTS.MOVIE;
             }
             
             const res = await httpRequest('/movies', serializeQueryParams(argsParsed));
             
-            return MoviesResponseSchema.parse({
-                status_code: res.status_code || 1,
-                error: res.error || 'OK',
-                number_of_total_results: res.number_of_total_results,
-                number_of_page_results: res.number_of_page_results,
-                limit: res.limit,
-                offset: res.offset,
+            return createStandardResponse(MoviesResponseSchema, {
+                ...res,
                 results: Array.isArray(res.results) ? res.results : [res.results]
             });
+        }
+    },
+    get_movies_by_character: {
+        description: 'Fetch DC Comics movies featuring a specific character',
+        schema: z.object({
+            filter: z.string().describe('Name of the character (e.g., "Batman")'),
+            limit: z.number().min(1).max(100).optional().describe('Limit results (max 100)'),
+            offset: z.number().optional().describe('Skip the specified number of resources in the result set')
+        }),
+        handler: async (args: any) => {
+            const { filter, limit, offset } = args;
+            
+            // Step 1: Find the character by name using the search function
+            const searchResults = await performDcComicsSearch(filter, 'character,movie', 'id,name,movies');
+            
+            // Check if character was found
+            if (!searchResults.results || searchResults.results.length === 0) {
+                return createEmptyResponse(MoviesResponseSchema, limit, offset);
+            }
+            
+            // Get the first matching character
+            const character = searchResults.results[0] as CharacterSearchResult;
+            
+            // Step 2: Check if the character has movies
+            if (!character.movies || !Array.isArray(character.movies) || character.movies.length === 0) {
+                return createEmptyResponse(MoviesResponseSchema, limit, offset);
+            }
+            
+            // Step 3: Extract movie names to search for
+            const movieNames = character.movies.map((movie: { name: string }) => movie.name).join(' OR ');
+            
+            // Step 4: Use search to find the complete movie data
+            const movieSearchResults = await performDcComicsSearch(
+                movieNames, 
+                'movie', 
+                DEFAULT_FIELD_LISTS.MOVIE,
+                limit,
+                offset
+            );
+            
+            return createStandardResponse(MoviesResponseSchema, movieSearchResults);
         }
     },
     get_movie_by_id: {
@@ -245,28 +237,58 @@ export const dcComicsTools = {
             // Format movie ID with the proper prefix
             const formattedId = formatResourceId('MOVIE', movieId);
             
-            // Set default field_list if not provided
-            const params: any = {};
-            if (field_list) {
-                params.field_list = field_list;
-            } else {
-                params.field_list = 'id,name,deck,description,image,release_date,runtime,rating,box_office_revenue,total_revenue,budget,studios,writers,producers';
-            }
+            // Set up parameters
+            const params = {
+                field_list: field_list || DEFAULT_FIELD_LISTS.MOVIE
+            };
             
             const res = await httpRequest<ApiResponse>(`/movie/${formattedId}`, params);
             
-            // Validate and return the movie data
-            return {
-                status_code: res.status_code || 1,
-                error: res.error || 'OK',
+            return createStandardResponse(MoviesResponseSchema, {
+                ...res,
                 number_of_total_results: 1,
                 number_of_page_results: 1,
                 limit: 1,
-                offset: 0,
-                results: MovieSchema.parse(res.results)
-            };
+                offset: 0
+            });
         }
-    }
+    },
+    get_issues_by_character_name: {
+        description: 'Fetch DC Comics issues featuring a specific character by name directly',
+        schema: GetIssuesByCharacterNameSchema,
+        handler: async (args: any) => {
+            const { filter, field_list, limit, offset } = GetIssuesByCharacterNameSchema.parse(args);
+            
+            // Search for issues with this character name
+            const issueSearchResults = await performDcComicsSearch(
+                filter, 
+                'issue', 
+                field_list || DEFAULT_FIELD_LISTS.ISSUE,
+                limit,
+                offset
+            );
+            
+            return IssuesResponseSchema.parse(issueSearchResults);
+        }
+    },
+    search: {
+        description: `Search across DC Comics resources (characters, issues/comics, volumes, etc). 
+            Use "resources" to specify the types of resources to search. For example, if a user asks for "Batman comics",
+            you can use "query=Batman" and "resources=character,issue" to get both character data and issues.
+        `,
+        schema: SearchSchema,
+        handler: async (args: any) => {
+            const argsParsed = SearchSchema.parse(args);
+            // Use the existing performDcComicsSearch function instead of duplicating logic
+            return await performDcComicsSearch(
+                argsParsed.query,
+                argsParsed.resources,
+                argsParsed.field_list,
+                argsParsed.limit,
+                argsParsed.offset
+            );
+        }
+    },
 };
 
 export type ToolName = keyof typeof dcComicsTools;

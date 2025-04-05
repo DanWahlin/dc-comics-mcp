@@ -23,6 +23,7 @@ MCP Server for the [Comic Vine API](https://comicvine.gamespot.com/api/), enabli
 - **Fetch a DC Comics Character by ID**: Get detailed info on any character using their `characterId`.
 - **Search Across Resources**: Search for characters, issues, volumes, and more using the `search` tool.
 - **Fetch Issues for a Character**: Get a list of comic issues featuring a specific character.
+- **Fetch Issues by Character Name**: Simplified way to find comics by character name without needing an ID.
 - **Generate HTML Display**: Create an HTML page displaying comic issues with images.
 - **Tool-based MCP integration**: Register this server with Model Context Protocol (MCP) tools (VS Code, Claude, etc.).
 - **Environment Configuration**: Use `.env` file to manage environment variables like `COMIC_VINE_API_KEY` and `COMIC_VINE_API_BASE`.
@@ -93,7 +94,16 @@ MCP Server for the [Comic Vine API](https://comicvine.gamespot.com/api/), enabli
   - `offset` (optional number): Number of results to skip for pagination.
 - **Returns**: JSON response with search results.
 
-### 8. `generate_comics_html` 🖼️📱
+### 8. `get_issues_by_character_name` 🦸‍♂️📚
+- **Description**: Fetch DC Comics issues featuring a specific character by name directly.
+- **Inputs**:
+  - `characterName` (string): Name of the character (e.g., "Superman", "Batman").
+  - `field_list` (optional string): List of fields to include in the response.
+  - `limit` (optional number): Maximum number of results to return (1–100).
+  - `offset` (optional number): Number of results to skip for pagination.
+- **Returns**: JSON response with issues featuring the specified character.
+
+### 9. `generate_comics_html` 🖼️📱
 - **Description**: Create an HTML page displaying DC Comics issues with their images.
 - **Inputs**:
   - `title` (optional string): Custom title for the HTML page.
@@ -232,9 +242,9 @@ If you want to associate the MCP server with all repos, add the following to you
 4. Put a question in the chat that would naturally invoke one of the tools, for example: 
 
     ```
-    List 10 DC Comics characters.
+    Show 10 Batman comics. Include cover image URLs.
 
-    What issues is Batman in?
+    What movies has Batman been in?
     
     Which characters appear in the Justice League issues?
 
@@ -242,3 +252,7 @@ If you want to associate the MCP server with all repos, add the following to you
     ```
 
     > **Note**: If you see "Sorry, the response was filtered by the Responsible AI Service. Please rephrase your prompt and try again.", try running it again or rephrasing the prompt.
+
+    ![GitHub Copilot example with DC Comics MCP tools](./images/ghcp-example.png)
+
+
