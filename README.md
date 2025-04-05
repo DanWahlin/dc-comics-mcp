@@ -245,7 +245,7 @@ If you want to associate the MCP server with all repos, add the following to you
 
     What movies has Batman been in?
     
-    Which characters appear in the Justice League issues?
+    Show me Wonder Woman's appearances in Justice League comics.
 
     Show me some Superman comics.
     ```
