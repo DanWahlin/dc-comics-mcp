@@ -1,3 +1,4 @@
+import { markdownInstructions } from "./instructions.js";
 import { 
     CharacterSchema,
     CharactersResponseSchema,
@@ -21,7 +22,7 @@ import { z } from "zod";
 
 export const dcComicsTools = {
     get_characters: {
-        description: 'Fetch DC Comics characters with optional filters',
+        description: `Fetch DC Comics characters with optional filters. ${markdownInstructions}`,
         schema: GetCharactersSchema,
         handler: async (args: any) => {
             const argsParsed = GetCharactersSchema.parse(args);
@@ -35,7 +36,7 @@ export const dcComicsTools = {
         }
     },
     get_character_by_id: {
-        description: 'Fetch a DC Comics character by ID',
+        description: `Fetch a DC Comics character by ID. ${markdownInstructions}`,
         schema: GetCharacterByIdSchema,
         handler: async (args: any) => {
             const argsParsed = GetCharacterByIdSchema.parse(args);
@@ -58,7 +59,7 @@ export const dcComicsTools = {
         }
     },
     get_issues_for_character: {
-        description: 'Fetch DC Comics issues (comics) filtered by character ID and optional filters',
+        description: `Fetch DC Comics issues (comics) filtered by character ID and optional filters. ${markdownInstructions}`,
         schema: GetIssuesForCharacterSchema,
         handler: async (args: any) => {
             const { characterId, ...rest } = GetIssuesForCharacterSchema.parse(args);
@@ -93,7 +94,7 @@ export const dcComicsTools = {
         }
     },
     get_issues: {
-        description: 'Fetches lists of DC Comics issues (comics) with optional filters',
+        description: `Fetches lists of DC Comics issues (comics) with optional filters. ${markdownInstructions}`,
         schema: GetIssuesSchema,
         handler: async (args: any) => {
             const argsParsed = GetIssuesSchema.parse(args);
@@ -106,7 +107,7 @@ export const dcComicsTools = {
         }
     },
     get_issue_by_id: {
-        description: 'Fetch a single DC Comics issue (comic) by ID',
+        description: `Fetch a single DC Comics issue (comic) by ID. ${markdownInstructions}`,
         schema: GetIssueByIdSchema,
         handler: async (args: any) => {
             const argsParsed = GetIssueByIdSchema.parse(args);
@@ -129,7 +130,7 @@ export const dcComicsTools = {
         }
     },
     get_characters_for_issue: {
-        description: 'Fetch DC Comics characters for a given issue/comic',
+        description: `Fetch DC Comics characters for a given issue/comic. ${markdownInstructions}`,
         schema: GetCharactersForIssueSchema,
         handler: async (args: any) => {
             const { issueId, ...rest } = GetCharactersForIssueSchema.parse(args);
@@ -166,8 +167,31 @@ export const dcComicsTools = {
             return createStandardResponse(CharactersResponseSchema, characterSearchResults);
         }
     },
+    get_issues_by_character_name: {
+        description: `Fetch DC Comics issues featuring a specific character by name directly. ${markdownInstructions}`,
+        schema: GetIssuesByCharacterNameSchema,
+        handler: async (args: any) => {
+            const { filter, field_list, limit, offset } = GetIssuesByCharacterNameSchema.parse(args);
+            
+            // Search for issues with this character name
+            const issueSearchResults = await performDcComicsSearch(
+                filter, 
+                'issue', 
+                field_list || DEFAULT_FIELD_LISTS.ISSUE,
+                limit,
+                offset
+            );
+            
+            return IssuesResponseSchema.parse(issueSearchResults);
+        }
+    },
     get_movies: {
-        description: 'Fetch DC Comics movies with optional filters',
+        description: `
+            Fetch DC Comics movies with optional filters. To filter based
+            on the movie title/name, use the "filter" parameter. For example, to get movies with "Batman" in the title
+            you can pass "filter=name:Batman,deck:Batman".
+            ${markdownInstructions}
+        `,
         schema: GetMoviesSchema,
         handler: async (args: any) => {
             const argsParsed = GetMoviesSchema.parse(args);
@@ -185,49 +209,10 @@ export const dcComicsTools = {
             });
         }
     },
-    get_movies_by_character: {
-        description: 'Fetch DC Comics movies featuring a specific character',
-        schema: z.object({
-            filter: z.string().describe('Name of the character (e.g., "Batman")'),
-            limit: z.number().min(1).max(100).optional().describe('Limit results (max 100)'),
-            offset: z.number().optional().describe('Skip the specified number of resources in the result set')
-        }),
-        handler: async (args: any) => {
-            const { filter, limit, offset } = args;
-            
-            // Step 1: Find the character by name using the search function
-            const searchResults = await performDcComicsSearch(filter, 'character,movie', 'id,name,movies');
-            
-            // Check if character was found
-            if (!searchResults.results || searchResults.results.length === 0) {
-                return createEmptyResponse(MoviesResponseSchema, limit, offset);
-            }
-            
-            // Get the first matching character
-            const character = searchResults.results[0] as CharacterSearchResult;
-            
-            // Step 2: Check if the character has movies
-            if (!character.movies || !Array.isArray(character.movies) || character.movies.length === 0) {
-                return createEmptyResponse(MoviesResponseSchema, limit, offset);
-            }
-            
-            // Step 3: Extract movie names to search for
-            const movieNames = character.movies.map((movie: { name: string }) => movie.name).join(' OR ');
-            
-            // Step 4: Use search to find the complete movie data
-            const movieSearchResults = await performDcComicsSearch(
-                movieNames, 
-                'movie', 
-                DEFAULT_FIELD_LISTS.MOVIE,
-                limit,
-                offset
-            );
-            
-            return createStandardResponse(MoviesResponseSchema, movieSearchResults);
-        }
-    },
     get_movie_by_id: {
-        description: 'Fetch a DC Comics movie by ID',
+        description: `Fetch a DC Comics movie by ID. 
+            ${markdownInstructions}
+        `,
         schema: z.object({
             movieId: z.number().describe('Unique identifier for the movie'),
             field_list: z.string().optional().describe('List of field names to include in the response, comma-separated')
@@ -253,28 +238,15 @@ export const dcComicsTools = {
             });
         }
     },
-    get_issues_by_character_name: {
-        description: 'Fetch DC Comics issues featuring a specific character by name directly',
-        schema: GetIssuesByCharacterNameSchema,
-        handler: async (args: any) => {
-            const { filter, field_list, limit, offset } = GetIssuesByCharacterNameSchema.parse(args);
-            
-            // Search for issues with this character name
-            const issueSearchResults = await performDcComicsSearch(
-                filter, 
-                'issue', 
-                field_list || DEFAULT_FIELD_LISTS.ISSUE,
-                limit,
-                offset
-            );
-            
-            return IssuesResponseSchema.parse(issueSearchResults);
-        }
-    },
     search: {
         description: `Search across DC Comics resources (characters, issues/comics, volumes, etc). 
             Use "resources" to specify the types of resources to search. For example, if a user asks for "Batman comics",
-            you can use "query=Batman" and "resources=character,issue" to get both character data and issues.
+            you can use "query=Batman" and "resources=character,issue" to get both character data and issues. If a
+            user asks for multiple characters or other multiple resources, you can use
+            query="Batman, Superman" and resources="character,issue" (or others as appropriate) to get both character data and issues.
+            - Use "field_list" to specify which fields to return in the response. For example, if you want to get the name and
+            description of the characters.
+            ${markdownInstructions}
         `,
         schema: SearchSchema,
         handler: async (args: any) => {

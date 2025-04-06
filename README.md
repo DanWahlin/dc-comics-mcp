@@ -241,20 +241,42 @@ If you want to associate the MCP server with all repos, add the following to you
 4. Put a question in the chat that would naturally invoke one of the tools, for example: 
 
     ```
-    Show 10 Batman comics. Include cover image URLs.
+    Show 10 Batman comics. Include cover images.
 
     What teams has Batman been part of?
     
     Show me Wonder Woman's appearances in Justice League comics.
 
     Show me some Superman comics.
+    
+    Who are the top 5 villains in the DC universe?
+    
+    Find all comics where Joker and Batman appear together.
+    
+    Show me the most recent Flash comics.
+    
+    What are the most popular Aquaman story arcs? Include images.
+    
+    Display Green Lantern comics from the 1990s.
+    
+    Compare Nightwing and Robin appearances in comics.
+    
+    Show me comics featuring the Suicide Squad.
+    
+    Find crossover events with Justice League and Teen Titans.
+    
+    List comics where Harley Quinn is the main character. Show cover images.
+    
+    Show me the origin story comics for Wonder Woman. Include cover images.
+
+    What movies has Batman been in? Show movie images if available.
     ```
 
     > **Note**: If you see "Sorry, the response was filtered by the Responsible AI Service.", try running it again or rephrasing the prompt.
 
 ### Examples: Using the DC Comics MCP Tools in GitHub Copilot
 
-  `What movies has Batman been in?`
+  `What movies has Batman been in? Show movie images if available.`
 
   ![GitHub Copilot example with DC Comics MCP tools](./images/ghcp-example.png)
 
