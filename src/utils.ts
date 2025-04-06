@@ -53,6 +53,54 @@ export function createEmptyResponse<T extends z.ZodType>(
     });
 }
 
+/**
+ * Helper function for fetching resources by ID with proper formatting
+ * @param resourceType Type of resource (e.g., 'CHARACTER', 'ISSUE', 'MOVIE')
+ * @param id Numeric ID of the resource
+ * @param fieldList Optional field list to include in response
+ * @param defaultFields Default fields to use if fieldList not provided
+ * @returns Promise with the API response
+ */
+export async function getResourceById<T = any>(
+    resourceType: keyof typeof ResourcePrefix,
+    id: number,
+    fieldList?: string,
+    defaultFields?: string
+): Promise<T> {
+    // Format resource ID with the proper prefix
+    const formattedId = formatResourceId(resourceType, id);
+    
+    // Set up parameters with default field list if not provided
+    const params = {
+        field_list: fieldList || (defaultFields || DEFAULT_FIELD_LISTS[resourceType as keyof typeof DEFAULT_FIELD_LISTS] || '')
+    };
+    
+    // Make the API request
+    const resourcePath = resourceType.toLowerCase();
+    return await httpRequest<T>(`/${resourcePath}/${formattedId}`, params);
+}
+
+/**
+ * Helper function to standardize parameter handling for list requests
+ * @param endpoint API endpoint to request
+ * @param args Request parameters
+ * @param defaultResourceType Resource type for default field list
+ * @returns Promise with the API response
+ */
+export async function getResourcesList<T = any>(
+    endpoint: string,
+    args: Record<string, any>,
+    defaultResourceType?: keyof typeof DEFAULT_FIELD_LISTS
+): Promise<T> {
+    // Ensure field_list is set with defaults if not provided
+    if (defaultResourceType && !args.field_list) {
+        args.field_list = DEFAULT_FIELD_LISTS[defaultResourceType];
+    }
+    
+    // Make the API request
+    return await httpRequest<T>(endpoint, serializeQueryParams(args));
+}
+
 // API utility functions that can be used by multiple tools
 // Reusable function for performing searches across DC Comics resources
 export async function performDcComicsSearch(query: string, resources?: string, field_list?: string, limit?: number, offset?: number) {

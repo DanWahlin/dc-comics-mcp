@@ -14,11 +14,11 @@ import {
     ResponseStatusSchema,
     MoviesResponseSchema,
     GetMoviesSchema,
-    GetIssuesByCharacterNameSchema
+    GetIssuesByCharacterNameSchema,
+    GetMovieByIdSchema
 } from "./schemas.js";
 import { ApiResponse, CharacterResponse, CharacterSearchResult, IssueResponse } from "./types.js";
-import { createEmptyResponse, createStandardResponse, DEFAULT_FIELD_LISTS, formatResourceId, generateComicsHtml, httpRequest, performDcComicsSearch, serializeQueryParams } from "./utils.js";
-import { z } from "zod";
+import { createEmptyResponse, createStandardResponse, DEFAULT_FIELD_LISTS, formatResourceId, generateComicsHtml, getResourceById, getResourcesList, httpRequest, performDcComicsSearch, serializeQueryParams } from "./utils.js";
 
 export const dcComicsTools = {
     get_characters: {
@@ -26,12 +26,8 @@ export const dcComicsTools = {
         schema: GetCharactersSchema,
         handler: async (args: any) => {
             const argsParsed = GetCharactersSchema.parse(args);
-            // Add field_list parameter to specify which fields to return
-            const params = {
-                ...serializeQueryParams(argsParsed),
-                field_list: argsParsed.field_list || DEFAULT_FIELD_LISTS.CHARACTER
-            };
-            const res = await httpRequest('/characters', params);
+            // Use the helper function to get a list of characters
+            const res = await getResourcesList('/characters', argsParsed, 'CHARACTER');
             return CharactersResponseSchema.parse(res);
         }
     },
@@ -40,14 +36,12 @@ export const dcComicsTools = {
         schema: GetCharacterByIdSchema,
         handler: async (args: any) => {
             const argsParsed = GetCharacterByIdSchema.parse(args);
-            // Format character ID with the proper prefix
-            const formattedId = formatResourceId('CHARACTER', argsParsed.characterId);
-            
-            // Add field_list parameter to specify which fields to return
-            const params = {
-                field_list: argsParsed.field_list || DEFAULT_FIELD_LISTS.CHARACTER
-            };
-            const res = await httpRequest<ApiResponse>(`/character/${formattedId}`, params);
+            // Use the helper function to get a character by ID
+            const res = await getResourceById<ApiResponse>(
+                'CHARACTER', 
+                argsParsed.characterId, 
+                argsParsed.field_list
+            );
             
             // Validate the response and results
             const characterResponse: CharacterResponse = {
@@ -98,11 +92,8 @@ export const dcComicsTools = {
         schema: GetIssuesSchema,
         handler: async (args: any) => {
             const argsParsed = GetIssuesSchema.parse(args);
-            // Set default field_list if not provided
-            if (!argsParsed.field_list) {
-                argsParsed.field_list = DEFAULT_FIELD_LISTS.ISSUE;
-            }
-            const res = await httpRequest(`/issues`, serializeQueryParams(argsParsed));
+            // Use the helper function to get a list of issues
+            const res = await getResourcesList('/issues', argsParsed, 'ISSUE');
             return IssuesResponseSchema.parse(res);
         }
     },
@@ -111,14 +102,12 @@ export const dcComicsTools = {
         schema: GetIssueByIdSchema,
         handler: async (args: any) => {
             const argsParsed = GetIssueByIdSchema.parse(args);
-            // Format issue ID with the proper prefix
-            const formattedId = formatResourceId('ISSUE', argsParsed.issueId);
-            
-            const params = {
-                field_list: argsParsed.field_list || DEFAULT_FIELD_LISTS.ISSUE
-            };
-            
-            const res = await httpRequest<ApiResponse>(`/issue/${formattedId}`, params);
+            // Use the helper function to get an issue by ID
+            const res = await getResourceById<ApiResponse>(
+                'ISSUE', 
+                argsParsed.issueId, 
+                argsParsed.field_list
+            );
             
             // Validate the response and results
             const issueResponse: IssueResponse = {
@@ -195,13 +184,8 @@ export const dcComicsTools = {
         schema: GetMoviesSchema,
         handler: async (args: any) => {
             const argsParsed = GetMoviesSchema.parse(args);
-            
-            // Set default field_list if not provided
-            if (!argsParsed.field_list) {
-                argsParsed.field_list = DEFAULT_FIELD_LISTS.MOVIE;
-            }
-            
-            const res = await httpRequest('/movies', serializeQueryParams(argsParsed));
+            // Use the helper function to get a list of movies
+            const res = await getResourcesList('/movies', argsParsed, 'MOVIE');
             
             return createStandardResponse(MoviesResponseSchema, {
                 ...res,
@@ -213,21 +197,15 @@ export const dcComicsTools = {
         description: `Fetch a DC Comics movie by ID. 
             ${markdownInstructions}
         `,
-        schema: z.object({
-            movieId: z.number().describe('Unique identifier for the movie'),
-            field_list: z.string().optional().describe('List of field names to include in the response, comma-separated')
-        }),
+        schema: GetMovieByIdSchema,
         handler: async (args: any) => {
-            const { movieId, field_list } = args;
-            // Format movie ID with the proper prefix
-            const formattedId = formatResourceId('MOVIE', movieId);
-            
-            // Set up parameters
-            const params = {
-                field_list: field_list || DEFAULT_FIELD_LISTS.MOVIE
-            };
-            
-            const res = await httpRequest<ApiResponse>(`/movie/${formattedId}`, params);
+            const argsParsed = GetMovieByIdSchema.parse(args);
+            // Use the helper function to get a movie by ID
+            const res = await getResourceById<ApiResponse>(
+                'MOVIE', 
+                argsParsed.movieId, 
+                argsParsed.field_list
+            );
             
             return createStandardResponse(MoviesResponseSchema, {
                 ...res,
