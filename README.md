@@ -17,8 +17,8 @@ MCP Server for the [Comic Vine API](https://comicvine.gamespot.com/api/), enabli
 > **Note**: All data and images returned by this MCP server are fetched from the [Comic Vine API](https://comicvine.gamespot.com/api/). This project is not affiliated with Comic Vine or DC Comics in any way. Documentation for the Comic Vine API can be found [here](https://comicvine.gamespot.com/api/documentation#toc-0-2).
 
 <div align="center">
-  <a href="./videos/dc-comics.mp4">
-    <img src="./images/batman-ghcp.gif" alt="DC Comics MCP Server Demo" width="640">
+  <a href="https://youtu.be/vBoqsLysHTg" target="_blank">
+    <img src="./images/animated-dc-comics-image.png" alt="DC Comics MCP Server Demo" width="640">
     <br>
     <em>Click to view demo video</em>
   </a>
