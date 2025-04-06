@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/danwahlin/dc-comics-mcp/compare/v1.0.0...1.0.1) (2025-04-06)
+
+
+### Bug Fixes
+
+* Update MCP server command and arguments in README for clarity and correctness ([7f30b7b](https://github.com/danwahlin/dc-comics-mcp/commit/7f30b7b1dac0d79e960375d4a0194f62861ff140))
+
 # [1.5.0](https://github.com/danwahlin/marvel-mcp/compare/1.4.0...1.5.0) (2025-03-31)
 
 
