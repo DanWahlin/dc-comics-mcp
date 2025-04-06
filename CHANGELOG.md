@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/danwahlin/dc-comics-mcp/compare/1.0.1...1.1.0) (2025-04-06)
+
+
+### Bug Fixes
+
+* Update demo link and image in README for DC Comics MCP Server ([b4c67c5](https://github.com/danwahlin/dc-comics-mcp/commit/b4c67c5bea2b6284c7ff048fd6b4c867942f5d8f))
+* Update release ([4c5526e](https://github.com/danwahlin/dc-comics-mcp/commit/4c5526ea77ee2889b16c0edf5e15a8294dd38e8a))
+
+
+### Features
+
+* Add DC Comics promotional video and simlify tools ([9b220cb](https://github.com/danwahlin/dc-comics-mcp/commit/9b220cbb7a879da9b2768449f2c9e3206a8d8884))
+
 ## [1.0.1](https://github.com/danwahlin/dc-comics-mcp/compare/v1.0.0...1.0.1) (2025-04-06)
 
 
