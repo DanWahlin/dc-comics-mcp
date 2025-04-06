@@ -168,12 +168,12 @@ Add the following to your `claude_desktop_config.json`:
   "mcpServers": {
     "dc-comics-mcp": {
       "type": "stdio",
-      // "command": "npx",
-      "command": "node",
+      "command": "npx",
+      // "command": "node",
       "args": [
-        // "-y",
-        // "@codewithdan/dc-comics-mcp"
-        "/PATH/TO/dc-comics-mcp/dist/index.js"
+          "-y",
+          "@codewithdan/dc-comics-mcp"
+          // "/PATH/TO/dc-comics-mcp/dist/index.js"
       ],
       "env": {
         "COMIC_VINE_API_KEY": "YOUR_API_KEY",
@@ -195,12 +195,12 @@ If you want to associate the MCP server with a specific repo, create a `.vscode/
      "inputs": [],
      "servers": {
         "dc-comics-mcp": {
-            // "command": "npx",
-            "command": "node",
+            "command": "npx",
+            // "command": "node",
             "args": [
-                // "-y",
-                // "@codewithdan/dc-comics-mcp"
-                "/PATH/TO/dc-comics-mcp/dist/index.js"
+                "-y",
+                "@codewithdan/dc-comics-mcp"
+                // "/PATH/TO/dc-comics-mcp/dist/index.js"
             ],
             "env": {
                 "COMIC_VINE_API_KEY": "YOUR_API_KEY",
@@ -217,12 +217,12 @@ If you want to associate the MCP server with all repos, add the following to you
   "mcp": {
     "servers": {
         "dc-comics-mcp": {
-            // "command": "npx",
-            "command": "node",
+            "command": "npx",
+            // "command": "node",
             "args": [
-                // "-y",
-                // "@codewithdan/dc-comics-mcp"
-                "/PATH/TO/dc-comics-mcp/dist/index.js"
+                "-y",
+                "@codewithdan/dc-comics-mcp"
+                // "/PATH/TO/dc-comics-mcp/dist/index.js"
             ],
             "env": {
                 "COMIC_VINE_API_KEY": "YOUR_API_KEY",
@@ -269,14 +269,14 @@ If you want to associate the MCP server with all repos, add the following to you
     
     Show me the origin story comics for Wonder Woman. Include cover images.
 
-    What movies has Batman been in? Show movie images if available.
+    What movies has Batman been in? Show movie images.
     ```
 
     > **Note**: If you see "Sorry, the response was filtered by the Responsible AI Service.", try running it again or rephrasing the prompt.
 
 ### Examples: Using the DC Comics MCP Tools in GitHub Copilot
 
-  `What movies has Batman been in? Show movie images if available.`
+  `What movies has Batman been in? Show movie images.`
 
   ![GitHub Copilot example with DC Comics MCP tools](./images/ghcp-example.png)
 
