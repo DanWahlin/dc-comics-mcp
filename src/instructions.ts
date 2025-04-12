@@ -1,9 +1,9 @@
 export const markdownInstructions = `
- - ALWAYS RENDER AN IMAGE URL AS MARKDOWN for an issue/comic cover, character or other resource with an image. 
+ - ALWAYS RENDER AN IMAGE URL AS MARKDOWN for an issue/comic cover, character or other resource with an available image. 
    Prefer using the "small_url" or "medium_url" from the image URLs returned by the API. 
  - Example image markdown:
 
-   ![Title of resource](image_url)
+   [![Title of resource](image_url)](image_url)
 
  - NEVER USE an <img> tag to render an image URL.
  - Render character, issue, or other titles in markdown as well. For example: 
