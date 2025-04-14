@@ -18,7 +18,8 @@ import {
     GetMovieByIdSchema
 } from "./schemas.js";
 import { ApiResponse, CharacterResponse, CharacterSearchResult, IssueResponse } from "./types.js";
-import { createEmptyResponse, createStandardResponse, DEFAULT_FIELD_LISTS, formatResourceId, generateComicsHtml, getResourceById, getResourcesList, httpRequest, performDcComicsSearch, serializeQueryParams } from "./utils.js";
+import { createEmptyResponse, createStandardResponse, DEFAULT_FIELD_LISTS, formatResourceId, getResourceById, 
+    getResourcesList, performDcComicsSearch } from "./utils.js";
 
 export const dcComicsTools = {
     get_characters: {
