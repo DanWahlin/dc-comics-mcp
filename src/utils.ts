@@ -1,7 +1,6 @@
 import { ResourcePrefix, ResponseStatusSchema, SearchResponseSchema } from './schemas.js';
 
 // Rest of utility functions
-import fetch from 'node-fetch';
 import { config } from 'dotenv';
 import { z } from 'zod';
 config();
