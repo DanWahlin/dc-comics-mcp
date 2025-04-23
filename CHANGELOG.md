@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/danwahlin/dc-comics-mcp/compare/1.1.2...1.2.0) (2025-04-23)
+
+
+### Features
+
+* Bump version to 1.2.2, remove schemas and tools files, and refactor imports ([7a38290](https://github.com/danwahlin/dc-comics-mcp/commit/7a3829080ed1292bdb1a97f45a18120a5aca44f2))
+
 ## [1.1.2](https://github.com/danwahlin/dc-comics-mcp/compare/1.1.1...1.1.2) (2025-04-23)
 
 

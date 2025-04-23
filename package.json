@@ -1,6 +1,6 @@
 {
   "name": "@codewithdan/dc-comics-mcp",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "DC Comics APIs MCP Server using Comic Vine API",
   "license": "MIT",
   "publishConfig": {
