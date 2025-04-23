@@ -1,4 +1,3 @@
-// /tools/tools.ts
 import { get_characters } from './get_characters/index.js';
 import { get_character_by_id } from './get_character_by_id/index.js';
 import { get_issues_for_character } from './get_issues_for_character/index.js';
