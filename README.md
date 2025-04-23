@@ -205,12 +205,19 @@ Add the following to your `claude_desktop_config.json`:
 
 > **Note**: If you already have the MCP server enabled with Claude Desktop, add `chat.mcp.discovery.enabled: true` in your VS Code settings and it will discover existing MCP server lists.
 
-If you want to associate the MCP server with a specific repo, create a `.vscode/mcp.json` file with this content:
+Add the following to your `settings.json` file (note that you can also add it to the `mcp.json` file if you want it for a specific repo):
 
    ```json
-   {
-     "inputs": [],
-     "servers": {
+   "mcp": {
+      "inputs": [
+          {
+              "type": "promptString",
+              "id": "comic-vine-api-key",
+              "description": "Comic Vine API Key",
+              "password": true
+          }
+      ],
+      "servers": {
         "dc-comics-mcp": {
             "command": "npx",
             // "command": "node",
@@ -220,34 +227,12 @@ If you want to associate the MCP server with a specific repo, create a `.vscode/
                 // "/PATH/TO/dc-comics-mcp/dist/index.js"
             ],
             "env": {
-                "COMIC_VINE_API_KEY": "YOUR_API_KEY",
+                "COMIC_VINE_API_KEY": "${input:comic-vine-api-key}",
                 "COMIC_VINE_API_BASE": "https://comicvine.gamespot.com/api"
             }
         }
-     }
+      }
    }
-   ```
-
-If you want to associate the MCP server with all repos, add the following to your VS Code User Settings JSON:
-
-   ```json
-  "mcp": {
-    "servers": {
-        "dc-comics-mcp": {
-            "command": "npx",
-            // "command": "node",
-            "args": [
-                "-y",
-                "@codewithdan/dc-comics-mcp"
-                // "/PATH/TO/dc-comics-mcp/dist/index.js"
-            ],
-            "env": {
-                "COMIC_VINE_API_KEY": "YOUR_API_KEY",
-                "COMIC_VINE_API_BASE": "https://comicvine.gamespot.com/api"
-            }
-        },
-    }
-  }
    ```
 
 ### Using Tools in GitHub Copilot

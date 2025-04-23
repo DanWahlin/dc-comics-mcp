@@ -1,8 +1,6 @@
-import { ResourcePrefix, ResponseStatusSchema, SearchResponseSchema } from './schemas.js';
-
-// Rest of utility functions
 import { config } from 'dotenv';
 import { z } from 'zod';
+import { ResourcePrefix, ResponseStatusSchema, SearchResponseSchema } from './tools/schemas.js';
 config();
 
 const COMIC_VINE_API_KEY = process.env.COMIC_VINE_API_KEY as string;

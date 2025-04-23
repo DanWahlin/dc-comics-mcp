@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CharacterSchema, IssueSchema, ResponseStatusSchema, SearchResultSchema } from "./schemas";
+import { CharacterSchema, IssueSchema, ResponseStatusSchema, SearchResultSchema } from "./tools/schemas.js";
 
 // Define interfaces for API responses
 export interface ApiResponse extends z.infer<typeof ResponseStatusSchema> {

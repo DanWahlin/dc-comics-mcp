@@ -9,7 +9,7 @@ import { instructions } from './instructions.js';
 const server = new Server(
   {
     name: 'dc-comics-mcp',
-    version: '1.2.1',
+    version: '1.2.2',
     description: 'An MCP Server to retrieve DC Comics information via the Comic Vine API.',
   },
   {
