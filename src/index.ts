@@ -3,7 +3,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { dcComicsTools, ToolName } from './tools.js';
+import { dcComicsTools, ToolName } from './tools/tools.js';
 import { instructions } from './instructions.js';
 
 const server = new Server(

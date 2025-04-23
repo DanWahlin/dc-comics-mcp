@@ -46,23 +46,24 @@
     "build": "npx tsc",
     "watch": "npx tsc --watch",
     "dev": "npx tsc && concurrently \"npx tsc --watch\" \"nodemon dist/index.js\"",
+    "inspect": "npx @modelcontextprotocol/inspector node build/index.js",
     "release:check": "semantic-release --dry-run"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.9.0",
-    "dotenv": "^16.4.7",
-    "zod": "^3.24.2",
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "dotenv": "^16.5.0",
+    "zod": "^3.24.3",
     "zod-to-json-schema": "^3.24.5"
   },
   "devDependencies": {
-    "@types/node": "^22.13.17",
+    "@types/node": "^22.14.1",
     "concurrently": "^9.1.2",
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.10",
     "semantic-release": "^24.2.3",
     "semantic-release-npm-github": "^5.0.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   },
   "files": [
     "dist/**/*"
