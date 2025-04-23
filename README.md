@@ -205,7 +205,7 @@ Add the following to your `claude_desktop_config.json`:
 
 > **Note**: If you already have the MCP server enabled with Claude Desktop, add `chat.mcp.discovery.enabled: true` in your VS Code settings and it will discover existing MCP server lists.
 
-Add the following to your `settings.json` file (note that you can also add it to the `mcp.json` file if you want it for a specific repo):
+Add the following to your `settings.json` file (note that you can also add it to the `.vscode/mcp.json` file if you want it for a specific repo):
 
    ```json
    "mcp": {
