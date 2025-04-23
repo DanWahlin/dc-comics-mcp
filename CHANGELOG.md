@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/danwahlin/dc-comics-mcp/compare/1.1.1...1.1.2) (2025-04-23)
+
+
+### Bug Fixes
+
+* Update DC Comics tools and schemas ([d7201dd](https://github.com/danwahlin/dc-comics-mcp/commit/d7201ddbebc07032c8cc3318bcaf347e81c02911))
+
 ## [1.1.1](https://github.com/danwahlin/dc-comics-mcp/compare/1.1.0...1.1.1) (2025-04-14)
 
 # [1.1.0](https://github.com/danwahlin/dc-comics-mcp/compare/1.0.1...1.1.0) (2025-04-06)
