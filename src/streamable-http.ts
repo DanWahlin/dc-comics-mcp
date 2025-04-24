@@ -34,7 +34,7 @@ export class StreamableHTTPServer {
             this.logger.info(`🧰 Listing ${tools.length} tools`);
             return {
                 jsonrpc: JSON_RPC,
-                tools,
+                tools
             };
         });
 
