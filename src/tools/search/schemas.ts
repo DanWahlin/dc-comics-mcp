@@ -10,6 +10,6 @@ export const SearchSchema = z.object({
     .string()
     .optional()
     .describe('Comma-separated list of resource types to search for. Available options are: character, concept, origin, object, location, issue, story_arc, volume, publisher, person, team, video'),
-  limit: z.number().min(1).max(100).optional().default(10).describe('Limit results (max 100, defaults to 10)'),
+  limit: z.number().min(1).max(100).optional().describe('Limit results'),
   offset: z.number().optional().describe('Skip the specified number of resources in the result set')
 });
