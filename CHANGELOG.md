@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/danwahlin/dc-comics-mcp/compare/1.2.0...1.2.1) (2025-04-25)
+
+
+### Bug Fixes
+
+* remove default values for ID and name fields in schemas due to issues ([8e09771](https://github.com/danwahlin/dc-comics-mcp/commit/8e097717cdada89b8d581608da96865f8737f4dc))
+
 # [1.2.0](https://github.com/danwahlin/dc-comics-mcp/compare/1.1.2...1.2.0) (2025-04-23)
 
 
