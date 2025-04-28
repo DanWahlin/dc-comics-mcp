@@ -201,7 +201,7 @@ Add the following to your `claude_desktop_config.json`:
 }
 ```
 
-### Use with GitHub Copilot (VS Code Insiders)
+### Use with GitHub Copilot
 
 > **Note**: If you already have the MCP server enabled with Claude Desktop, add `chat.mcp.discovery.enabled: true` in your VS Code settings and it will discover existing MCP server lists.
 
