@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/danwahlin/dc-comics-mcp/compare/1.2.1...1.2.2) (2025-08-01)
+
+
+### Bug Fixes
+
+* Update npm run build command ([b23fdca](https://github.com/danwahlin/dc-comics-mcp/commit/b23fdcaeda1a41a8798eb5617b99ab0ff299fe25))
+
 ## [1.2.1](https://github.com/danwahlin/dc-comics-mcp/compare/1.2.0...1.2.1) (2025-04-25)
 
 
