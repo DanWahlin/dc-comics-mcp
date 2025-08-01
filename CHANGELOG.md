@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/danwahlin/dc-comics-mcp/compare/1.2.2...1.2.3) (2025-08-01)
+
+
+### Bug Fixes
+
+* Update packages ([f0c9b1f](https://github.com/danwahlin/dc-comics-mcp/commit/f0c9b1fc8d8b63ab062ba5fc7df1aa7c76ceee33))
+
 ## [1.2.2](https://github.com/danwahlin/dc-comics-mcp/compare/1.2.1...1.2.2) (2025-08-01)
 
 
